@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
+import Link from "next/link";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -19,22 +20,26 @@ const ProductList = () => {
   }, []);
 
   return (
-    <div className="p-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+    <div className="p-10 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
       {products.length > 0 ? (
         products.map((product) => (
           <div
             key={product.documentId}
             className="bg-white rounded-lg shadow-lg p-5 hover:shadow-2xl transition-shadow duration-300 ease-in-out"
           >
-            <div className="relative h-64 mb-4">
-              <Image
-                src={product.product_main_image.url}
-                alt={product.products_name}
-                layout="fill"
-                objectFit="cover"
-                className="rounded-t-lg h-10 w-10"
-              />
-            </div>
+            <Link href={`/product/${product.documentId}`}>
+              
+              <div className="relative h-64 mb-4">
+                <Image
+                  src={product.product_main_image.url}
+                  alt={product.products_name}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-t-lg h-10 w-10"
+                />
+              </div>
+            </Link>
+
             <h2 className="text-2xl font-semibold text-gray-800 mb-3">
               {product.products_name}
             </h2>
