@@ -1,11 +1,19 @@
 "use client";
+import { addToCart } from "@/libs/fetaures/cartSlice";
 import axios from "axios";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 
 const SingleProductPage = ({ params }) => {
+  const dispatch = useDispatch();
   const { documentId } = params;
   const [product, setProduct] = useState(null); // State for product data
   const [selectedImage, setSelectedImage] = useState(""); // State for selected image
+
+  const handleAddToCart = () => {
+    dispatch(addToCart(product));
+  };
 
   useEffect(() => {
     axios
@@ -23,7 +31,7 @@ const SingleProductPage = ({ params }) => {
   };
 
   return (
-    <div className="flex p-15 space-x-6">
+    <div className="flex p-15">
       {/* Thumbnail Images */}
       <div className="flex flex-col space-y-4">
         {product.product_multiple_image.map((img) => (
@@ -39,7 +47,7 @@ const SingleProductPage = ({ params }) => {
       {/* Left Section: Images */}
       <div className="flex flex-col w-1/2 space-y-4">
         {/* Main Image */}
-        <div className="border p-2">
+        <div className="w-[85%] p-2.5 h-auto">
           <img
             className="w-full h-auto"
             src={selectedImage || product.product_main_image.url}
@@ -69,12 +77,18 @@ const SingleProductPage = ({ params }) => {
 
         {/* Buttons */}
         <div className="flex space-x-4">
-          <button className="bg-yellow-500 text-white px-4 py-2 rounded">
-            Go to Cart
-          </button>
-          <button className="bg-orange-500 text-white px-4 py-2 rounded">
-            Buy Now
-          </button>
+          
+            <button
+              className="bg-yellow-500 text-white px-4 py-2 rounded"
+              onClick={handleAddToCart}
+            >
+              Add to Cart
+            </button>
+          <Link href="/checkoutpage">
+            <button className="bg-orange-500 text-white px-4 py-2 rounded">
+              Buy Now
+            </button>
+          </Link>
         </div>
       </div>
     </div>

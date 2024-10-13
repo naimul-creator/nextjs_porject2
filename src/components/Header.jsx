@@ -1,11 +1,20 @@
 "use client";
-import React, { useState } from 'react';
-import { FaSearch, FaShoppingCart, FaUser, FaBars, FaTimes } from 'react-icons/fa';
-import Link from 'next/link';
+import React, { useState } from "react";
+import {
+  FaSearch,
+  FaShoppingCart,
+  FaUser,
+  FaBars,
+  FaTimes,
+} from "react-icons/fa";
+import Link from "next/link";
+import { useSelector } from "react-redux";
 
 export default function Header() {
   const [dropdown, setDropdown] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const items = useSelector((state) => state.cart.items);
 
   return (
     <header className="bg-gray-800 text-white py-4">
@@ -59,23 +68,31 @@ export default function Header() {
           </div>
 
           {/* Cart and Account Icons */}
-          <Link href="/cart">
+          <Link href="/addtocart" className="flex items-center">
             <FaShoppingCart className="text-xl" />
+            <span className="ml-2">{items.length}</span>
           </Link>
 
-          <Link href="/account">
+          <Link href="/account" className="flex items-center">
             <FaUser className="text-xl" />
+            {/* আপনার ইউজারের তথ্য এখানে দেখাতে পারেন */}
           </Link>
 
           {/* Mobile Menu Button */}
           <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}
+            {menuOpen ? (
+              <FaTimes className="text-xl" />
+            ) : (
+              <FaBars className="text-xl" />
+            )}
           </button>
         </div>
       </div>
 
       {/* Navigation Links */}
-      <nav className={`bg-gray-700 py-2 ${menuOpen ? "block" : "hidden"} md:block`}>
+      <nav
+        className={`bg-gray-700 py-2 ${menuOpen ? "block" : "hidden"} md:block`}
+      >
         <div className="container mx-auto flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
           <Link href="/deals" className="hover:text-red-500">
             Deals
