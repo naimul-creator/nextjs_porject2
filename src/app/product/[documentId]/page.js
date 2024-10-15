@@ -8,31 +8,21 @@ import { useDispatch } from "react-redux";
 const SingleProductPage = ({ params }) => {
   const dispatch = useDispatch();
   const { documentId } = params;
-  const [product, setProduct] = useState(null); // State for product data
-  const [selectedImage, setSelectedImage] = useState(""); // State for selected image
-
-  const handleAddToCart = () => {
-    dispatch(addToCart(product));
-  };
+  const [product, setProduct] = useState(null);
+  const [selectedImage, setSelectedImage] = useState("");
 
   useEffect(() => {
     axios
       .get(`http://localhost:1337/api/products/${documentId}?populate=*`)
-      .then((response) => setProduct(response.data.data))
-      .catch((error) => console.error("Error fetching product:", error));
+      .then((response) => setProduct(response.data.data));
   }, [documentId]);
 
-  if (!product) {
-    return <div>Loading...</div>; // Loading state
-  }
+  if (!product) return <div>Loading...</div>;
 
-  const handleImageClick = (imageUrl) => {
-    setSelectedImage(imageUrl);
-  };
+  const handleImageClick = (imageUrl) => setSelectedImage(imageUrl);
 
   return (
     <div className="flex p-15">
-      {/* Thumbnail Images */}
       <div className="flex flex-col space-y-4">
         {product.product_multiple_image.map((img) => (
           <img
@@ -44,46 +34,36 @@ const SingleProductPage = ({ params }) => {
           />
         ))}
       </div>
-      {/* Left Section: Images */}
       <div className="flex flex-col w-1/2 space-y-4">
-        {/* Main Image */}
-        <div className="w-[85%] p-2.5 h-auto">
-          <img
-            className="w-full h-auto"
-            src={selectedImage || product.product_main_image.url}
-            alt={product.products_name}
-          />
-        </div>
+        <img
+          className="w-full h-auto"
+          src={selectedImage || product.product_main_image.url}
+          alt={product.products_name}
+        />
       </div>
-
-      {/* Right Section: Product Information */}
       <div className="w-1/2 flex flex-col space-y-4">
-        {/* Product Title and Description */}
         <h1 className="text-3xl font-bold">{product.products_name}</h1>
         <p>{product.product_description}</p>
-
-        {/* Price and Stock Information */}
         <div>
           <p className="text-lg">
             Price: ₹{product.selling_price}{" "}
             <span className="line-through">₹{product.original_price}</span>
           </p>
-          {product.stock_quantity > 0 ? (
-            <p className="text-lg text-green-500">In Stock</p>
-          ) : (
-            <p className="text-lg text-red-500">Out of Stock</p>
-          )}
+          <p
+            className={`text-lg ${
+              product.stock_quantity > 0 ? "text-green-500" : "text-red-500"
+            }`}
+          >
+            {product.stock_quantity > 0 ? "In Stock" : "Out of Stock"}
+          </p>
         </div>
-
-        {/* Buttons */}
         <div className="flex space-x-4">
-          
-            <button
-              className="bg-yellow-500 text-white px-4 py-2 rounded"
-              onClick={handleAddToCart}
-            >
-              Add to Cart
-            </button>
+          <button
+            className="bg-yellow-500 text-white px-4 py-2 rounded"
+            onClick={() => dispatch(addToCart(product))}
+          >
+            Add to Cart
+          </button>
           <Link href="/checkoutpage">
             <button className="bg-orange-500 text-white px-4 py-2 rounded">
               Buy Now

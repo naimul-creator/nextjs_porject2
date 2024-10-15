@@ -1,4 +1,3 @@
-// cartSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
 const CartSlice = createSlice({
@@ -8,10 +7,22 @@ const CartSlice = createSlice({
   },
   reducers: {
     addToCart: (state, action) => {
-      state.items.push(action.payload);
+      const existingProduct = state.items.find(
+        (item) => item.id === action.payload.id
+      );
+      if (existingProduct) {
+        // প্রোডাক্ট কার্টে থাকলে পরিমাণ বাড়ানো হচ্ছে
+        existingProduct.quantity += 1;
+      } else {
+        // প্রোডাক্ট নতুন হলে কার্টে যোগ করা হচ্ছে
+        state.items.push({ ...action.payload, quantity: 1 });
+      }
+    },
+    removeFromCart: (state, action) => {
+      state.items = state.items.filter((item) => item.id !== action.payload);
     },
   },
 });
 
-export const { addToCart } = CartSlice.actions;
+export const { addToCart, removeFromCart } = CartSlice.actions;
 export default CartSlice.reducer;
