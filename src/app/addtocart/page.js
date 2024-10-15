@@ -8,16 +8,38 @@ const Cart = () => {
   const dispatch = useDispatch();
   const items = useSelector((state) => state.cart.items);
   const [quantity, setQuantity] = useState({});
+  const deliveryCharges = 5;
+  const discountRate = 0.1;
+
+  const totalPrice = items.reduce((total, product) => 
+    total + product.selling_price * (quantity[product.id] || 1), 0
+  );
+
+  const totalOriginalPrice = items.reduce((total, product) => 
+    total + product.orginal_price * (quantity[product.id] || 1), 0
+);
+
+const totalSellingPrice = items.reduce((total, product) => 
+  total + product.selling_price * (quantity[product.id] || 1), 0
+);
+  const discountAmount = (totalOriginalPrice - totalSellingPrice).toFixed(2);
+  const finalAmount = (totalSellingPrice + deliveryCharges).toFixed(2);
 
   const handleQuantityChange = (id, increment) => {
     setQuantity((prev) => {
-      const newQty = Math.min(Math.max((prev[id] || 1) + increment, 1), 5); // পরিমাণ ১ থেকে ৫ এর মধ্যে
+      const newQty = Math.min(Math.max((prev[id] || 1) + increment, 1), 10);
       return { ...prev, [id]: newQty };
     });
   };
 
   const handleRemove = (id) => {
-    dispatch(removeFromCart(id)); // প্রোডাক্ট রিমুভ করা হচ্ছে
+    dispatch(removeFromCart(id));
+  };
+
+  const handleCheckout = () => {
+    // Logic to redirect or start checkout process
+    // Example: redirect to "/checkout" page
+    window.location.href = "/checkout";
   };
 
   return (
@@ -27,19 +49,14 @@ const Cart = () => {
         {items.length === 0 ? (
           <p className="text-center text-xl text-gray-300">No products available</p>
         ) : (
-          <table className="w-full table-auto border-separate border-spacing-y-4">
-            <thead>
-              <tr className="text-left border-b border-gray-700">
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Remove</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((product) => (
-                <tr key={product.id} className="border-b border-orange-600">
-                  <td className="py-4 flex items-center space-x-4">
+          <div className="grid grid-cols-1 gap-6">
+            {items.map((product) => {
+              const itemQuantity = quantity[product.id] || 1;
+              const itemTotalPrice = (product.selling_price * itemQuantity).toFixed(2);
+
+              return (
+                <div key={product.id} className="border-b border-orange-600 flex justify-between py-4">
+                  <div className="flex items-center space-x-4">
                     <Image
                       src={product.product_main_image.url}
                       alt={product.products_name}
@@ -48,40 +65,69 @@ const Cart = () => {
                       className="object-cover rounded-md"
                     />
                     <span>{product.products_name}</span>
-                  </td>
-                  <td className="py-4">
-                    <div className="flex items-center space-x-3">
-                      <button
-                        className="bg-gray-700 text-white px-2 py-1 rounded"
-                        onClick={() => handleQuantityChange(product.id, -1)}
-                      >
-                        -
-                      </button>
-                      <span>{quantity[product.id] || 1}</span>
-                      <button
-                        className="bg-gray-700 text-white px-2 py-1 rounded"
-                        onClick={() => handleQuantityChange(product.id, 1)}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    ${product.selling_price * (quantity[product.id] || 1)}
-                  </td>
-                  <td className="py-4">
+                  </div>
+                  <div className="flex items-center space-x-3">
                     <button
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => handleRemove(product.id)}
+                      className="bg-gray-700 text-white px-2 py-1 rounded"
+                      onClick={() => handleQuantityChange(product.id, -1)}
                     >
-                      <FaTrash size={18} />
+                      -
                     </button>
-                  </td>
-                </tr>
-              ))}
+                    <span>{itemQuantity}</span>
+                    <button
+                      className="bg-gray-700 text-white px-2 py-1 rounded"
+                      onClick={() => handleQuantityChange(product.id, 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span className="py-4">${itemTotalPrice}</span>
+                  <button
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => handleRemove(product.id)}
+                  >
+                    <FaTrash size={18} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <div className="w-1/3 ml-8">
+        <h2 className="text-2xl font-bold mb-4">Price Details</h2>
+        <div className="bg-gray-700 p-5 rounded-lg border border-white shadow-lg">
+          <table className="w-full table-auto">
+            <tbody>
+              <tr className="border-b border-gray-600">
+                <td className="py-2">Price ({`${items.length} item${items.length > 1 ? "s" : ""}`}):</td>
+                <td className="py-2 text-right">${totalPrice.toFixed(2)}</td>
+              </tr>
+              <tr className="border-b border-gray-600">
+                <td className="py-2">Delivery Charges:</td>
+                <td className="py-2 text-right">${deliveryCharges.toFixed(2)}</td>
+              </tr>
+              <tr className="border-b border-gray-600">
+                <td className="py-2">Discount:</td>
+                <td className="py-2 text-right">${discountAmount}</td>
+              </tr>
+              <tr className="font-bold">
+                <td className="py-2">Total Amount:</td>
+                <td className="py-2 text-right">${finalAmount}</td>
+              </tr>
             </tbody>
           </table>
-        )}
+          <p className="mt-4 text-green-300">You will save ${discountAmount} on this order!</p>
+
+          {/* Proceed to Checkout Button */}
+          <button
+            className="mt-6 w-full bg-green-600 text-white py-3 rounded-lg text-lg font-bold hover:bg-green-700 transition"
+            onClick={handleCheckout}
+          >
+            Proceed to Checkout
+          </button>
+        </div>
       </div>
     </div>
   );
