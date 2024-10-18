@@ -1,28 +1,38 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const CartSlice = createSlice({
+const cartSlice = createSlice({
   name: 'cart',
   initialState: {
     items: [],
   },
   reducers: {
     addToCart: (state, action) => {
-      const existingProduct = state.items.find(
-        (item) => item.id === action.payload.id
-      );
-      if (existingProduct) {
-        // প্রোডাক্ট কার্টে থাকলে পরিমাণ বাড়ানো হচ্ছে
-        existingProduct.quantity += 1;
+      const existingItem = state.items.find(item => item.id === action.payload.id);
+      if (existingItem) {
+        if (existingItem.quantity < 10) { // Prevent increasing above 10
+          existingItem.quantity += 1;
+        }
       } else {
-        // প্রোডাক্ট নতুন হলে কার্টে যোগ করা হচ্ছে
-        state.items.push({ ...action.payload, quantity: 1 });
+        state.items.push({ ...action.payload, quantity: 1 }); // Initialize quantity
       }
     },
     removeFromCart: (state, action) => {
-      state.items = state.items.filter((item) => item.id !== action.payload);
+      state.items = state.items.filter(item => item.id !== action.payload);
+    },
+    incrementQuantity: (state, action) => {
+      const item = state.items.find(item => item.id === action.payload);
+      if (item && item.quantity < 10) { // Prevent increasing above 10
+        item.quantity += 1;
+      }
+    },
+    decrementQuantity: (state, action) => {
+      const item = state.items.find(item => item.id === action.payload);
+      if (item && item.quantity > 1) { // Prevent decreasing below 1
+        item.quantity -= 1;
+      }
     },
   },
 });
 
-export const { addToCart, removeFromCart } = CartSlice.actions;
-export default CartSlice.reducer;
+export const { addToCart, removeFromCart, incrementQuantity, decrementQuantity } = cartSlice.actions;
+export default cartSlice.reducer;
