@@ -31,6 +31,7 @@ const cartSlice = createSlice({
         item.quantity -= 1;
       }
     },
+   
   },
 });
 

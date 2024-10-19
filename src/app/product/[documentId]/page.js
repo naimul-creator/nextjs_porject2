@@ -1,7 +1,6 @@
 "use client";
 import { addToCart } from "@/libs/fetaures/cartSlice";
 import axios from "axios";
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -12,14 +11,19 @@ const SingleProductPage = ({ params }) => {
   const [selectedImage, setSelectedImage] = useState("");
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:1337/api/products/${documentId}?populate=*`)
-      .then((response) => setProduct(response.data.data));
+    axios.get(`http://localhost:1337/api/products/${documentId}?populate=*`)
+      .then(response => setProduct(response.data.data))
+      .catch(error => console.error("Error fetching product:", error));
   }, [documentId]);
 
   if (!product) return <div>Loading...</div>;
 
   const handleImageClick = (imageUrl) => setSelectedImage(imageUrl);
+
+  const handleBuyNow = () => {
+    dispatch(addToCart(product));
+    window.location.href = "/checkout";
+  };
 
   return (
     <div className="flex p-15">
@@ -49,11 +53,7 @@ const SingleProductPage = ({ params }) => {
             Price: ₹{product.selling_price}{" "}
             <span className="line-through">₹{product.original_price}</span>
           </p>
-          <p
-            className={`text-lg ${
-              product.stock_quantity > 0 ? "text-green-500" : "text-red-500"
-            }`}
-          >
+          <p className={`text-lg ${product.stock_quantity > 0 ? "text-green-500" : "text-red-500"}`}>
             {product.stock_quantity > 0 ? "In Stock" : "Out of Stock"}
           </p>
         </div>
@@ -64,11 +64,12 @@ const SingleProductPage = ({ params }) => {
           >
             Add to Cart
           </button>
-          <Link href="/checkoutpage">
-            <button className="bg-orange-500 text-white px-4 py-2 rounded">
-              Buy Now
-            </button>
-          </Link>
+          <button
+            className="bg-orange-500 text-white px-4 py-2 rounded"
+            onClick={handleBuyNow}
+          >
+            Buy Now
+          </button>
         </div>
       </div>
     </div>
