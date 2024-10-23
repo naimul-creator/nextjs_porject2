@@ -2,27 +2,45 @@
 import { useSelector } from "react-redux";
 import Image from "next/image";
 import { useState } from "react";
+import axios from "axios";
 
 const CheckoutPage = () => {
   const checkoutItems = useSelector((state) => state.cart.items);
-  const [formData, setFormData] = useState({
-    name: "",
-    address: "",
-    email: "",
-    phone: "",
-    paymentMethod: "",
-  });
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Submitted", formData);
+
+    const totalSellingPrice = checkoutItems.reduce(
+      (total, item) => total + item.selling_price * item.quantity,
+      0
+    );
+
+    const deliveryCharges = 68;
+    const finalAmount = totalSellingPrice + deliveryCharges;
+
+    // অর্ডার ডেটা তৈরির জন্য
+    const orderData = {
+      data: {
+        order_id: checkoutItems.map((product) => product.documentId), // অর্ডারের আইডি
+        total_price: finalAmount, // মোট দাম
+        product_image: checkoutItems.map((item) => item.product_main_image.url), // পণ্যের ছবি
+        products_name: checkoutItems.map((item) => item.products_name), // পণ্যের নাম
+        product_price: checkoutItems.map((item) => item.selling_price), // পণ্যের দাম
+        product_quantity: checkoutItems.map((item) => item.quantity), // পণ্যের পরিমাণ
+      },
+    };
+
+    try {
+      // Strapi এ axios POST রিকোয়েস্ট পাঠানো হচ্ছে
+      const response = await axios.post(
+        "http://localhost:1337/api/products?populate=*",
+        orderData
+      );
+
+      console.log("Order placed successfully:", response.data);
+    } catch (error) {
+      console.error("Error placing order:", error);
+    }
   };
 
   const totalSellingPrice = checkoutItems.reduce(
@@ -31,7 +49,7 @@ const CheckoutPage = () => {
   );
 
   const totalOriginalPrice = checkoutItems.reduce(
-    (total, item) => total + item.orginal_price * item.quantity,
+    (total, item) => total + item.original_price * item.quantity,
     0
   );
 
@@ -64,62 +82,12 @@ const CheckoutPage = () => {
           </div>
         ))}
         <form onSubmit={handleSubmit} className="space-y-4 mt-6">
-          <div className="relative">
-            <label className="block text-sm font-medium">
-              Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              className="w-full p-2 border rounded placeholder-gray-500"
-              placeholder="Enter your name"
-              required
-            />
-          </div>
-          <div className="relative">
-            <label className="block text-sm font-medium">
-              Address <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-              className="w-full p-2 border rounded placeholder-gray-500"
-              placeholder="Enter your address"
-              required
-            />
-          </div>
-          <div className="relative">
-            <label className="block text-sm font-medium">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full p-2 border rounded placeholder-gray-500"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-          <div className="relative">
-            <label className="block text-sm font-medium">
-              Phone <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              className="w-full p-2 border rounded placeholder-gray-500"
-              placeholder="Enter your phone number"
-              required
-            />
-          </div>
+          <button
+            type="submit"
+            className="w-full p-2 bg-blue-600 text-white rounded"
+          >
+            Place Order
+          </button>
         </form>
       </div>
 
@@ -159,12 +127,6 @@ const CheckoutPage = () => {
           <p className="mt-4 text-green-300">
             You will save ৳{discountAmount} on this order!
           </p>
-          <button
-            type="submit"
-            className="w-full p-2 bg-blue-600 text-white rounded"
-          >
-            Order Place
-          </button>
         </div>
       </div>
     </div>
